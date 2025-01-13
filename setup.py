@@ -38,9 +38,9 @@ setup(
                 'available on an Open edX LMS',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/hastexo/hastexo-xblock',
-    author='hastexo',
-    author_email='pypi@hastexo.com',
+    url='https://github.com/JasonL888/hastexo-xblock.git',
+    author='JasonL888',
+    author_email='lauwtj@yahoo.com',
     license='AGPL-3.0',
     classifiers=[
         'Development Status :: 4 - Beta',
