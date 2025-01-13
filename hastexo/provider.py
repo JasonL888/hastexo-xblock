@@ -663,7 +663,7 @@ class GcloudProvider(Provider):
         return {"status": status,
                 "outputs": outputs}
 
-    def create_stack(self, name, run):
+    def create_stack(self, name, run, key_type=""):
         deployment_name = self._encode_name(name)
 
         properties = {"run": run}
