@@ -695,7 +695,6 @@ class GcloudProvider(Provider):
             "type": template_path,
             "properties": properties
         }
-        self.logger.debug("resource: %s" % resource)
 
         # Build outputs
         outputs = [
@@ -706,7 +705,6 @@ class GcloudProvider(Provider):
             {"name": "password",
              "value": properties["password"]}
         ]
-        self.logger.debug("outputs: %s" % outputs)
 
         # Build config
         config = {
@@ -714,7 +712,6 @@ class GcloudProvider(Provider):
             "resources": [resource],
             "outputs": outputs
         }
-        self.logger.debug("config: %s" % config)
 
         # Build request body
         body = {
