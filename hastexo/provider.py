@@ -93,10 +93,12 @@ class Provider(object):
         would want to use their task logger for logging.
         """
         self.logger = logger
+        self.logger.setLevel(logging.DEBUG)
 
     def reset_logger(self):
         """Reset the logger back to the standard one."""
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
 
     def set_capacity(self, capacity):
         if capacity in (None, "None"):
@@ -693,6 +695,7 @@ class GcloudProvider(Provider):
             "type": template_path,
             "properties": properties
         }
+        self.logger.debug("resource: %s" % resource)
 
         # Build outputs
         outputs = [
@@ -703,6 +706,7 @@ class GcloudProvider(Provider):
             {"name": "password",
              "value": properties["password"]}
         ]
+        self.logger.debug("outputs: %s" % outputs)
 
         # Build config
         config = {
@@ -710,6 +714,7 @@ class GcloudProvider(Provider):
             "resources": [resource],
             "outputs": outputs
         }
+        self.logger.debug("config: %s" % config)
 
         # Build request body
         body = {
@@ -725,6 +730,7 @@ class GcloudProvider(Provider):
             "name": deployment_name,
             "description": name
         }
+        self.logger.debug("body: %s" % body)
 
         try:
             self.logger.info('Creating Google Cloud deployment '

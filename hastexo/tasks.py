@@ -47,6 +47,7 @@ from .common import (
 from celery import current_app
 
 logger = get_task_logger(__name__)
+logger.setLevel(logging.DEBUG)
 
 CLEANUP_SUSPEND = 1
 CLEANUP_DELETE = 2
@@ -142,6 +143,7 @@ class LaunchStackTask(HastexoTask):
         # Set the arguments.
         for key, value in kwargs.items():
             setattr(self, key, value)
+            logger.debug("key[%s] value[%s] " % (key, value))
 
         # If a time limit is set for using labs,
         # check how much time learner has already spent
@@ -196,6 +198,7 @@ class LaunchStackTask(HastexoTask):
 
         # Get the stack
         stack = Stack.objects.get(id=self.stack_id)
+        logger.debug("stack [%s] " % stack)
 
         # Initialize parameters
         self.protocol = stack.protocol
