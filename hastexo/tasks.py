@@ -231,7 +231,7 @@ class LaunchStackTask(HastexoTask):
                     stack.course_id,
                     provider["template"]
                 )
-                p.set_template(template.decode('asii'))
+                p.set_template(template.decode('ascii'))
 
                 environment_path = provider.get("environment")
                 if environment_path:
