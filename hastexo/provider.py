@@ -654,7 +654,7 @@ class GcloudProvider(Provider):
             response = self.ds.deployments().get(
                 project=self.project, deployment=deployment_name
             ).execute()
-        except (GcloudApiHttpError, HttpError) as e:
+        except GcloudApiHttpError as e:
             if e.resp.status == 404:
                 status = DELETE_COMPLETE
                 outputs = {}
