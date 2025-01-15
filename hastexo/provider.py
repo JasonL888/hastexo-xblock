@@ -502,6 +502,8 @@ class GcloudProvider(Provider):
         except GcloudApiError as e:
             raise ProviderException(e)
 
+        self.logger.debug("response: %s" % response)
+
         outputs = {}
         if "layout" in response:
             try:
