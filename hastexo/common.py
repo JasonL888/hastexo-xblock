@@ -26,6 +26,7 @@ from .models import Stack
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 ACTIONS = (
     ADOPT,
@@ -315,6 +316,7 @@ def ssh_to(user, ip, key):
     settings = get_xblock_settings()
     sleep_timeout = settings.get("sleep_timeout", 10)
     ssh_connect_timeout = settings.get("ssh_connect_timeout", 10)
+    logger.debug("ip: %s, user: %s, key: %s" % (ip, user, key))
 
     connected = False
     while not connected:
@@ -332,6 +334,7 @@ def ssh_to(user, ip, key):
             # is, and keep retrying.
             logger.info("Got %s during SSH connection to ip (%s), retrying." %
                         (e.__class__.__name__, ip))
+            logger.debug("Exception: %s" % e)
         except EnvironmentError as enve:
             if enve.errno in (errno.EAGAIN,
                               errno.ENETDOWN,
