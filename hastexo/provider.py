@@ -527,6 +527,8 @@ class GcloudProvider(Provider):
                         value = base64.decodebytes(value).decode("utf-8")
                     except binascii.Error:
                         pass
+                    except TypeError:
+                        pass
 
                 outputs[name] = value
 
