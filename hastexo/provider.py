@@ -655,12 +655,16 @@ class GcloudProvider(Provider):
                 project=self.project, deployment=deployment_name
             ).execute()
         except GcloudApiHttpError as e:
+            self.logger.debug("e: %s" % e)
             if e.resp.status == 404:
+                self.logger.debug("Deployment not found.")
                 status = DELETE_COMPLETE
                 outputs = {}
             else:
+                self.logger.debug("Deployment HTTP error.")
                 raise ProviderException(e)
         except GcloudApiError as e:
+            self.logger.debug("Deployment API error.")
             raise ProviderException(e)
         else:
             status = self._get_deployment_status(response)
