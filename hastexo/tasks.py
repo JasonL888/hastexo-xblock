@@ -143,7 +143,6 @@ class LaunchStackTask(HastexoTask):
         # Set the arguments.
         for key, value in kwargs.items():
             setattr(self, key, value)
-            logger.debug("key[%s] value[%s] " % (key, value))
 
         # If a time limit is set for using labs,
         # check how much time learner has already spent
@@ -198,7 +197,6 @@ class LaunchStackTask(HastexoTask):
 
         # Get the stack
         stack = Stack.objects.get(id=self.stack_id)
-        logger.debug("stack [%s] " % stack)
 
         # Initialize parameters
         self.protocol = stack.protocol

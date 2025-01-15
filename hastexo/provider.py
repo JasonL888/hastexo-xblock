@@ -501,9 +501,7 @@ class GcloudProvider(Provider):
             ).execute()
         except GcloudApiError as e:
             raise ProviderException(e)
-
-        self.logger.debug("response: %s" % response)
-
+        
         outputs = {}
         if "layout" in response:
             try:
@@ -654,21 +652,15 @@ class GcloudProvider(Provider):
             response = self.ds.deployments().get(
                 project=self.project, deployment=deployment_name
             ).execute()
-            self.logger.debug("response: %s" % response)
         except GcloudApiHttpError as e:
-            self.logger.debug("e: %s" % e)
             if e.resp.status == 404:
-                self.logger.debug("Deployment not found.")
                 status = DELETE_COMPLETE
                 outputs = {}
             else:
-                self.logger.debug("Deployment HTTP error.")
                 raise ProviderException(e)
         except GcloudApiError as e:
-            self.logger.debug("Deployment API error.")
             raise ProviderException(e)
         else:
-            self.logger.debug("Deployment found.")
             status = self._get_deployment_status(response)
             outputs = self._get_deployment_outputs(response)
 
@@ -737,7 +729,6 @@ class GcloudProvider(Provider):
             "name": deployment_name,
             "description": name
         }
-        self.logger.debug("body: %s" % body)
 
         try:
             self.logger.info('Creating Google Cloud deployment '
