@@ -6,6 +6,8 @@ import paramiko
 import logging
 import six
 
+import base64
+
 from io import StringIO
 from socket import timeout as SocketTimeout
 from paramiko import RSAKey, Ed25519Key
@@ -26,6 +28,7 @@ from .models import Stack
 
 
 logger = logging.getLogger(__name__)
+logger = logging.LoggerAdapter(logger, {'userid': None})
 logger.setLevel(logging.DEBUG)
 
 ACTIONS = (
@@ -307,11 +310,25 @@ def ssh_to(user, ip, key):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     pkey = None
+    key_load_success = False
+    decoded_key = base64.b64decode(key).decode()
     for key_type in (RSAKey, Ed25519Key):
+        if key_load_success:
+            break
         try:
             pkey = key_type.from_private_key(StringIO(key))
-        except SSHException:
-            pass
+            key_load_success = True
+            logger.debug("key loaded as %s" % key_type)
+        except SSHException as ex:
+            logger.error("key failed loading as %s with ex: %s" % (key_type, ex))
+            try:
+                pkey = key_type.from_private_key(StringIO(decoded_key))
+                key_load_success = True
+                logger.debug("b64decode key loaded as %s" % key_type)
+            except SSHException as ex:
+                logger.error("b64decode key failed loading as %s with ex: %s" % (key_type, ex))
+    if key_load_success == False:
+        raise SSHException("Key is neither RSA nor Ed25519")
 
     settings = get_xblock_settings()
     sleep_timeout = settings.get("sleep_timeout", 10)
