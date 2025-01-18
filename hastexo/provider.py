@@ -131,6 +131,8 @@ class Provider(object):
 
     def generate_key_pair(self, encodeb64=False, key_type="rsa"):
         keypair = {}
+        # for OpenStack, this is empty string
+        keypair["original_private_key"] = ""
 
         if key_type == "ed25519":
             # use cryptography to generate Ed25519Key until paramiko adds
@@ -156,6 +158,8 @@ class Provider(object):
             s.close()
 
         if encodeb64:
+            # for GCP, this is the original private key before b64encode
+            keypair["original_private_key"] = private_key
             private_key = base64.b64encode(b(private_key))
 
         keypair["private_key"] = private_key

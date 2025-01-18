@@ -311,7 +311,7 @@ def ssh_to(user, ip, key):
 
     pkey = None
     key_load_success = False
-    decoded_key = base64.b64decode(key).decode()
+
     for key_type in (RSAKey, Ed25519Key):
         if key_load_success:
             break
@@ -320,13 +320,14 @@ def ssh_to(user, ip, key):
             key_load_success = True
             logger.debug("key loaded as %s" % key_type)
         except SSHException as ex:
-            logger.error("key failed loading as %s with ex: %s" % (key_type, ex))
+            logger.debug("key failed loading as %s with ex: %s - will try base64decode" % (key_type, ex))
             try:
+                decoded_key = base64.b64decode(key).decode()
                 pkey = key_type.from_private_key(StringIO(decoded_key))
                 key_load_success = True
                 logger.debug("b64decode key loaded as %s" % key_type)
             except SSHException as ex:
-                logger.error("b64decode key failed loading as %s with ex: %s" % (key_type, ex))
+                logger.debug("b64decode key failed loading as %s with ex: %s" % (key_type, ex))
     if key_load_success == False:
         raise SSHException("Key is neither RSA nor Ed25519")
 
