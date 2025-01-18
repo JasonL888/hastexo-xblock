@@ -616,8 +616,15 @@ class LaunchStackTask(HastexoTask):
         if was_resumed:
             stack_key = self.stack_key
         else:
-            stack_key = provider_stack.get("private_key") or \
-                provider_stack["outputs"].get("private_key")
+            # only for GCP, get the orignal key to store into stack.key
+            stack_original_key = provider_stack["outputs"].get("original_private_key", "")
+            if stack_original_key != "":
+                stack_key = stack_original_key
+                logger.debug("GCP stack using original key before base64")
+            else:
+                stack_key = provider_stack.get("private_key") or \
+                    provider_stack["outputs"].get("private_key")
+                logger.debug("OpenCloud stack using private key")
 
         if stack_ip is None or not stack_key:
             if was_resumed:
