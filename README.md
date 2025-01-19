@@ -59,34 +59,37 @@ limited by the feature set of the cloud's deployment features.
 
 ## Mental Model 
 
-### Launching stack 
+### Launching stack on GCP
 - user accesses `lms-1` container
 - `lms-1` container triggers celery task on `lms-worker-1` container
 - `lms-worker-1` container 
   - reads DB for existing stack
   - reads template/environment
   - invokes cloud API (eg. GCP Deployment Mgr API)
-- Cloud provisions the VM 
-- `lms-worker-1` container attempts ssh to verify 
+- GCP provisions the VM 
+- `lms-worker-1` container attempts ssh to VM to verify stack
 
 ```mermaid
-graph LR
-	User --> lms-1
-	lms-1 -- redis/celery --> lms-worker-1
-	lms-worker-1 --> GCP
-	GCP -- provisions --> VM
-	lms-worker-1 -- ssh --> VM
+sequenceDiagram
+	User->>lms-1: launch stack
+	lms-1->>lms-worker-1: create stack as celery task
+	lms-worker-1->>GCP: Deployment Manager API
+	GCP->>VM: provision env 
+	lmsworker-1->>VM: ssh to verify
 ```
 
-
-### Accessing VM 
-- user websocket connects via `caddy-1` container
-- `caddy-1` container reverse proxies `/hastexo-xblock*` to Hastexo-XBlock container on port `8085`
+### Accessing VM on GCP
+- user websocket connects to `caddy-1` container
+- `caddy-1` container reverse proxies `/hastexo-xblock*` to `hastexo-xblock-1` container on port `8085`
 - `hastexo-xblock-1` container runs GuacamoleClient to `guacd` container on port `4822`
 - `guacd` container connects to VM
+
 ```mermaid
-graph LR
-	User -- /hastexo-xblock/websocket-tunnel --> caddy-1 -- port 8095 --> hastexo-xblock-1 -- 4822 --> guacd --> GCP
+sequenceDiagram
+	User->>caddy-1: /hastexo-xblock/websocket-tunnel 
+	caddy-1->>hastexoxblock-1: port 8095
+	hastexoxblock-1->>guacd: port 4822
+	guacd->>vm: port 22
 ```
 
 ## Deployment with [Tutor](https://docs.tutor.overhang.io)
