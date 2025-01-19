@@ -1,6 +1,3 @@
-[![PyPI version](https://badge.fury.io/py/hastexo-xblock.svg)](https://pypi.python.org/pypi/hastexo-xblock)
-[![Build Status](https://github.com/hastexo/hastexo-xblock/workflows/Python%20package/badge.svg)](https://github.com/hastexo/hastexo-xblock/actions?query=workflow%3A%22Python+package%22) [![codecov](https://codecov.io/gh/hastexo/hastexo-xblock/branch/master/graph/badge.svg)](https://codecov.io/gh/hastexo/hastexo-xblock)
-
 # hastexo XBlock
 
 The hastexo [XBlock](https://xblock.readthedocs.org/en/latest/) is an
@@ -29,6 +26,9 @@ repository, you must select the appropriate one:
 | Palm             | `>=16.0, <17` | `>=7.5, <8.0`  | `stable-7`    |
 | Quince           | `>=17.0, <18` | `>=7.9, <8.0`  | `stable-7`    |
 | Redwood          | `>=18.0, <19` | `>=8.0`        | `master`      |
+| Sumac            | `>=19.0, <20` | `>=8.2`        | `master`      |
+
+> note: this fork only tested on Sumac
 
 Instructions for deploying this XBlock with Tutor can be found
 below, in the [Deployment with Tutor](#deployment-with-tutor)
@@ -57,6 +57,37 @@ day).
 Course authors can fully define and customize the lab environment. It is only
 limited by the feature set of the cloud's deployment features.
 
+## Mental Model 
+
+### Launching stack 
+- user accesses `lms-1` container
+- `lms-1` container triggers celery task on `lms-worker-1` container
+- `lms-worker-1` container 
+  - reads DB for existing stack
+  - reads template/environment
+  - invokes cloud API (eg. GCP Deployment Mgr API)
+- Cloud provisions the VM 
+- `lms-worker-1` container attempts ssh to verify 
+
+```mermaid
+graph LR
+	User --> lms-1
+	lms-1 -- redis/celery --> lms-worker-1
+	lms-worker-1 --> GCP
+	GCP -- provisions --> VM
+	lms-worker-1 -- ssh --> VM
+```
+
+
+### Accessing VM 
+- user websocket connects via `caddy-1` container
+- `caddy-1` container reverse proxies `/hastexo-xblock*` to Hastexo-XBlock container on port `8085`
+- `hastexo-xblock-1` container runs GuacamoleClient to `guacd` container on port `4822`
+- `guacd` container connects to VM
+```mermaid
+graph LR
+	User -- /hastexo-xblock/websocket-tunnel --> caddy-1 -- port 8095 --> hastexo-xblock-1 -- 4822 --> guacd --> GCP
+```
 
 ## Deployment with [Tutor](https://docs.tutor.overhang.io)
 
@@ -67,17 +98,21 @@ two steps:
    `OPENEDX_EXTRA_PIP_REQUIREMENTS` list in `config.yml`:
    ```
    OPENEDX_EXTRA_PIP_REQUIREMENTS:
-     - "hastexo-xblock==8.2.0"
+     - git+https://github.com/JasonL888/hastexo-xblock.git@8.2.0-jl-001#egg=hastexo-xblock
    ```
+   > this is so you pick up the package from this git repo instead of the default from pypi
+
    For additional information, please refer to the [official
    documentation](https://docs.tutor.overhang.io/configuration.html#installing-extra-xblocks-and-requirements).
 
 
 2. Install and enable the `tutor-contrib-hastexo` plugin:
    ```
-   pip install git+https://github.com/hastexo/tutor-contrib-hastexo
+   pip install git+https://github.com/JasonL888/tutor-contrib-hastexo@v2.1.0-002
    tutor plugins enable hastexo
    ```
+   > this is so you pick up the plugin from forked git instead of default from pypi
+
    Add the necessary configurations to your Tutor `config.yml`. Unless
    you want to change the default configurations, you'll only need to
    add the settings for the XBlock via `HASTEXO_XBLOCK_SETTINGS`, for
@@ -85,12 +120,12 @@ two steps:
    ```
    HASTEXO_XBLOCK_SETTINGS:
      check_timeout: 120
-     delete_age: 0
+     delete_age: 7
      delete_attempts: 3
      delete_interval: 3600
      delete_task_timeout: 900
      guacamole_js_version: 1.5.5
-     enable_fullscreen: false
+     enable_fullscreen: true
      instructions_layout: above
      js_timeouts:
        check: 5000
@@ -160,6 +195,34 @@ two steps:
     "hastexo"
    ]
    ```
+
+5. Upload Content Files in Studio. 
+- In Studio > Content > Files, click `Add Files`, to upload
+  - orchestration template
+    - [Creating Orchestration Templates](#creating-an-orchestration-template-for-your-course)
+    - [Sample Google Template File](samples/gcloud/sample-template.yaml.jinja)
+  - environment file
+    - [Sample Google Environment File](samples/gcloud/sample-environment.yaml)
+
+6. Update course unit (to add XBlock component where SSH terminal or RDP access is needed)
+- In Studio
+  - navigate to Course and specific Subsection
+  - click `New Unit`
+  - click `Add New Component`
+  - click `Advanced`
+  - select `hastexo XBlock`
+  - Edit hastexo XBlock settings
+    - important ones
+      - stack_template_path
+        - eg. `lab1_template` where you upload above
+      - providers
+        - eg. which links to 
+          - provider `default` 
+          - uploaded template file `lab1_template` 
+          - uploaded environment file `lab1_env`
+        ```
+        [{"name": "default", "capacity": 10, "template": "lab1_template", "environment": "lab1_env"}]
+        ```
 
 ## XBlock settings
 
@@ -261,10 +324,10 @@ This is a brief explanation of each:
 
 * `providers`: A dictionary of OpenStack providers that course authors can pick
   from.  Each entry is itself a dictionary containing provider configuration
-  parameters.  You must configure at least one, named "default".  The following
+  parameters.  You must configure at least one, named `default`.  The following
   is a list of supported parameters:
 
-    * `type`: The provider type.  Currently "openstack" or "gcloud".  Defaults
+    * `type`: The provider type.  Currently `openstack` or `gcloud`.  Defaults
       to "openstack" if not provided, for backwards-compatibility.
 
     The following apply to OpenStack only:
@@ -293,7 +356,16 @@ This is a brief explanation of each:
 
     * `os_region_name`: OpenStack region name.
 
-    The following apply to Gcloud only.  All values aside from region can be
+    The following apply to Gcloud only.  
+    > Service Account
+    > * need to have following APIs enabled
+    >   * Deployment Manager
+    >   * Compute Engine
+    > * need to grant following roles
+    >   * Deployment Manager Editor
+	  >   * Compute Admin
+
+    All values aside from region can be
     obtained by creating a [service
     account](https://console.developers.google.com/iam-admin/serviceaccounts)
     and downloading the JSON-format key:
@@ -430,6 +502,17 @@ Defining the outputs:
 ### Gcloud examples
 
 A sample Gcloud template is provided under `samples/gcloud/sample-template.yaml.jinja`.
+> note: 
+> - Following jinja variables will be either auto-generated by this XBlock or resolved by GCP Deployment Manager during API call
+>   - env["deployment"]
+>   - properties["private_key"]
+>   - properties["public_key"]
+>   - properties["password"]
+> - Following jinja variables are needed (via uploaded environment file)
+>   - image (eg.`projects/ubuntu-os-cloud/global/images/family/ubuntu-2404-lts-amd64`
+>   - size (eg. `10` for size of disk in GB)
+>   - zone (eg. `us-central1-a` to start VM)
+>   - type (eg. `n1-standard-1` type of VM with num cores)
 
 The Gcloud deployment manager cannot generate an SSH key or random password
 itself, so the XBlock will do it for you.  There's no need to generate them or
