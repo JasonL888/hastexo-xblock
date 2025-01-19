@@ -47,7 +47,6 @@ from .common import (
 from celery import current_app
 
 logger = get_task_logger(__name__)
-logger.setLevel(logging.DEBUG)
 
 CLEANUP_SUSPEND = 1
 CLEANUP_DELETE = 2
@@ -624,7 +623,7 @@ class LaunchStackTask(HastexoTask):
             else:
                 stack_key = provider_stack.get("private_key") or \
                     provider_stack["outputs"].get("private_key")
-                logger.debug("OpenCloud stack using private key")
+                logger.debug("OpenStack stack using private key")
 
         if stack_ip is None or not stack_key:
             if was_resumed:

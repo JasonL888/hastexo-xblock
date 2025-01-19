@@ -28,8 +28,6 @@ from .models import Stack
 
 
 logger = logging.getLogger(__name__)
-logger = logging.LoggerAdapter(logger, {'userid': None})
-logger.setLevel(logging.DEBUG)
 
 ACTIONS = (
     ADOPT,

@@ -93,12 +93,10 @@ class Provider(object):
         would want to use their task logger for logging.
         """
         self.logger = logger
-        self.logger.setLevel(logging.DEBUG)
 
     def reset_logger(self):
         """Reset the logger back to the standard one."""
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
 
     def set_capacity(self, capacity):
         if capacity in (None, "None"):
