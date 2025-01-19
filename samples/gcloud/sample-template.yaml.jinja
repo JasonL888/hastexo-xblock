@@ -28,9 +28,9 @@ resources:
                gecos: Training User
                groups: users,adm
                ssh-authorized-keys:
-                 - ssh-rsa {{ properties["public_key"] }}
+                 - {{ properties["public_key"] }}
                lock-passwd: false
-               shell: /bin/false
+               shell: /bin/bash
                sudo: ALL=(ALL) NOPASSWD:ALL
            chpasswd:
              list: |
