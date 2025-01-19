@@ -75,7 +75,7 @@ sequenceDiagram
 	lms-1->>lms-worker-1: create stack as celery task
 	lms-worker-1->>GCP: Deployment Manager API
 	GCP->>VM: provision env 
-	lmsworker-1->>VM: ssh to verify
+	lms-worker-1->>VM: ssh to verify
 ```
 
 ### Accessing VM on GCP
