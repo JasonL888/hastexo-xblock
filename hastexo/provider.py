@@ -708,6 +708,8 @@ class GcloudProvider(Provider):
              "value": "$(ref.%s.public_ip)" % deployment_name},
             {"name": "private_key",
              "value": properties["private_key"]},
+            {"name": "original_private_key",
+             "value": properties["original_private_key"]},
             {"name": "password",
              "value": properties["password"]}
         ]
