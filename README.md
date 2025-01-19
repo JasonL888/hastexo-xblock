@@ -513,6 +513,8 @@ A sample Gcloud template is provided under `samples/gcloud/sample-template.yaml.
 >   - properties["password"]
 > - Following jinja variables are needed (via uploaded environment file)
 >   - image (eg.`projects/ubuntu-os-cloud/global/images/family/ubuntu-2404-lts-amd64`
+>     - OS needs to have cloud-init services enabled in order to run cloud config commands in the template 
+>       - notably, at time of writing, the default Debian 12 image does not have cloud-init services pre-installed 
 >   - size (eg. `10` for size of disk in GB)
 >   - zone (eg. `us-central1-a` to start VM)
 >   - type (eg. `n1-standard-1` type of VM with num cores)
