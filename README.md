@@ -101,7 +101,7 @@ two steps:
    `OPENEDX_EXTRA_PIP_REQUIREMENTS` list in `config.yml`:
    ```
    OPENEDX_EXTRA_PIP_REQUIREMENTS:
-     - git+https://github.com/JasonL888/hastexo-xblock.git@8.2.0-jl-001#egg=hastexo-xblock
+     - git+https://github.com/JasonL888/hastexo-xblock.git@1.0.0#egg=hastexo-xblock
    ```
    > this is so you pick up the package from this git repo instead of the default from pypi
 
