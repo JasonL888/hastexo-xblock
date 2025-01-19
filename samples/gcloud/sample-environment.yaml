@@ -1,0 +1,5 @@
+properties:
+  image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2404-lts-amd64
+  size: 10
+  zone: us-central1-a
+  type: n1-standard-1
